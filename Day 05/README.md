@@ -2,6 +2,8 @@
 
 ## Video reference for Day 5 is the following:
 
+[![Watch the video](https://img.youtube.com/vi/UYlVTs_yK8U/maxresdefault.jpg)](https://www.youtube.com/watch?v=UYlVTs_yK8U&ab_channel=CloudWithVarJosh)
+
 ---
 ## ⭐ Support the Project  
 If this **repository** helps you, give it a ⭐ to show your support and help others discover it! 
@@ -305,7 +307,7 @@ echo "$DOCKERHUB_PWD" | docker login -u "$DOCKERHUB_USER" --password-stdin
 
 # 2) Image naming
 IMAGE="docker.io/cloudwithvarjosh/cwvj-flask"
-TAG="${TAG:-${BUILD_NUMBER}}"
+TAG="${BUILD_NUMBER}"
 
 # 3) Build and push (exact tag + latest for convenience)
 echo "Building image..."
