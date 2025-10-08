@@ -153,7 +153,7 @@ You should see:
 
 ![Alt text](/images/5b.png)
 
-Create a tiny **Flask** app, **build a container image**, **push** it to a **private Docker Hub repo**, and **deploy** it on the Docker host (your Mac) using **DooD**.
+Create a tiny **Flask** app, **build a container image**, **push** it to a **private Docker Hub repo**, and **deploy** it on the Docker host using **DooD**.
 **Why this matters:** it shows the full CI loop in one pass — **Code → Image → Private Registry → Running Container → Smoke Test**.
 
 ---
