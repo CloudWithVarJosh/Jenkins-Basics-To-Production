@@ -84,10 +84,6 @@ Every new branch, gate, or fan-out means **more jobs to wire and keep in sync**,
 Use **Pipelines** for anything beyond a tiny flow; Freestyle chains are best left for quick, one-off tasks.
 
 
-
-
-
-
 ---
 
 ## Two ways to use a Pipeline
