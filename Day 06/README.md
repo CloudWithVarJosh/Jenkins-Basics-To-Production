@@ -1,8 +1,8 @@
-# Day 6: Jenkins Project 2: Pipeline
+# Day 6: CI/CD Project 2: From Freestyle to Jenkins Pipeline: Build, Push, Deploy
 
 ## Video reference for Day 6 is the following:
 
-
+[![Watch the video](https://img.youtube.com/vi/545qDzphdu8/maxresdefault.jpg)](https://www.youtube.com/watch?v=545qDzphdu8)
 
 ---
 ## ⭐ Support the Project  
