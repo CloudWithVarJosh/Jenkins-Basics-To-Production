@@ -10,21 +10,17 @@ If this **repository** helps you, give it a ⭐ to show your support and help ot
 ---
 
 ## Table of Contents
-- [Introduction](#introduction)
-
+- [Introduction](#introduction)  
 - [Multi-Branch Pipelines (MBP)](#multi-branch-pipelines-mbp)
-  - [Multi-Branch Pipelines — What they are and why they matter](#multi-branch-pipelines--what-they-are-and-why-they-matter)
-
-- [How Jenkins discovers and builds (at a glance)](#how-jenkins-discovers-and-builds-at-a-glance)
-
+  - [Multi-Branch Pipelines — What they are and why they matter](#multi-branch-pipelines--what-they-are-and-why-they-matter)  
+- [How Jenkins discovers and builds (at a glance)](#how-jenkins-discovers-and-builds-at-a-glance)  
 - [Trunk-Based CI/CD: Multibranch Flow](#trunk-based-cicd-multibranch-flow)
   - [1) Create branch (`feature/ui-font`)](#1-create-branch-featureui-font)
   - [2) Push → Branch job (build-only, fast)](#2-push--branch-job-build-only-fast)
   - [3) Open PR → PR job (preview environment)](#3-open-pr--pr-job-preview-environment)
   - [4) Gate the merge on deploy success](#4-gate-the-merge-on-deploy-success)
   - [5) Post-merge on `main`](#5-post-merge-on-main)
-  - [6) Cleanup](#6-cleanup)
-
+  - [6) Cleanup](#6-cleanup)  
 - [Demo: Jenkins Multi-Branch Pipeline (MBP)](#demo-jenkins-multi-branch-pipeline-mbp)
   - [Why MBP (vs a single Pipeline with many branches)](#why-mbp-vs-a-single-pipeline-with-many-branches)
   - [What we’ll do](#what-well-do)
@@ -33,10 +29,8 @@ If this **repository** helps you, give it a ⭐ to show your support and help ot
   - [Step 2: Create another branch (`feature/ui`) locally and push](#step-2-create-another-branch-featureui-locally-and-push)
   - [Step 3: Let MBP discover and build the new branch](#step-3-let-mbp-discover-and-build-the-new-branch)
   - [Step 4: Open PR and Cleanup](#step-4-open-pr-and-cleanup)
-    - [Verify the result (code + running app)](#verify-the-result-code--running-app)
-
-- [Conclusion](#conclusion)
-
+    - [Verify the result (code + running app)](#verify-the-result-code--running-app)  
+- [Conclusion](#conclusion)  
 - [References](#references)
 
 ---
