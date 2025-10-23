@@ -2,6 +2,7 @@
 
 ## Video reference for Day 7 is the following:
 
+[![Watch the video](https://img.youtube.com/vi/Eq-HHLtSJM4/maxresdefault.jpg)](https://www.youtube.com/watch?v=Eq-HHLtSJM4)
 
 ---
 ## ⭐ Support the Project  
@@ -10,41 +11,54 @@ If this **repository** helps you, give it a ⭐ to show your support and help ot
 ---
 
 ## Table of Contents
-- [Introduction](#introduction)  
-- [Multi-Branch Pipelines (MBP)](#multi-branch-pipelines-mbp)
-  - [Multi-Branch Pipelines — What they are and why they matter](#multi-branch-pipelines--what-they-are-and-why-they-matter)  
-- [How Jenkins discovers and builds (at a glance)](#how-jenkins-discovers-and-builds-at-a-glance)  
-- [Trunk-Based CI/CD: Multibranch Flow](#trunk-based-cicd-multibranch-flow)
-  - [1) Create branch (`feature/ui-font`)](#1-create-branch-featureui-font)
-  - [2) Push → Branch job (build-only, fast)](#2-push--branch-job-build-only-fast)
-  - [3) Open PR → PR job (preview environment)](#3-open-pr--pr-job-preview-environment)
-  - [4) Gate the merge on deploy success](#4-gate-the-merge-on-deploy-success)
-  - [5) Post-merge on `main`](#5-post-merge-on-main)
-  - [6) Cleanup](#6-cleanup)  
-- [Demo: Jenkins Multi-Branch Pipeline (MBP)](#demo-jenkins-multi-branch-pipeline-mbp)
-  - [Why MBP (vs a single Pipeline with many branches)](#why-mbp-vs-a-single-pipeline-with-many-branches)
-  - [What we’ll do](#what-well-do)
-  - [Prerequisites](#prerequisites)
-  - [Step 1: Create the MBP job](#step-1-create-the-mbp-job)
-  - [Step 2: Create another branch (`feature/ui`) locally and push](#step-2-create-another-branch-featureui-locally-and-push)
-  - [Step 3: Let MBP discover and build the new branch](#step-3-let-mbp-discover-and-build-the-new-branch)
-  - [Step 4: Open PR and Cleanup](#step-4-open-pr-and-cleanup)
-    - [Verify the result (code + running app)](#verify-the-result-code--running-app)  
-- [Conclusion](#conclusion)  
-- [References](#references)
+
+* [Introduction](#introduction)
+* [Multi-Branch Pipelines (MBP)](#multi-branch-pipelines-mbp)
+
+  * [Multi-Branch Pipelines — What they are and why they matter](#multi-branch-pipelines--what-they-are-and-why-they-matter)
+* [How Jenkins discovers and builds (at a glance)](#how-jenkins-discovers-and-builds-at-a-glance)
+* [Trunk-Based CI/CD: Multibranch Flow](#trunk-based-cicd-multibranch-flow)
+
+  * [1) Create branch (`feature/ui-font`)](#1-create-branch-featureui-font)
+  * [2) Push → Branch job (build-only, target ≤5m)](#2-push--branch-job-build-only-target-5m)
+  * [3) Open PR → PR job (needs app running)](#3-open-pr--pr-job-needs-app-running)
+  * [4) Gate the merge on deploy success](#4-gate-the-merge-on-deploy-success)
+  * [5) Post-merge on `main`](#5-post-merge-on-main)
+  * [6) Cleanup](#6-cleanup)
+* [Demo: Jenkins Multi-Branch Pipeline (MBP)](#demo-jenkins-multi-branch-pipeline-mbp)
+
+  * [Why MBP (vs a single Pipeline with many branches)](#why-mbp-vs-a-single-pipeline-with-many-branches)
+  * [What we’ll do](#what-well-do)
+  * [Prerequisites](#prerequisites)
+  * [Step 0: Create the MBP job](#step-0-create-the-mbp-job)
+  * [Build strategies (what to build)](#build-strategies-what-to-build)
+
+    * [Branch build strategy (affects branch jobs, not PR jobs)](#branch-build-strategy-affects-branch-jobs-not-pr-jobs)
+    * [Discover pull requests from origin (same-repo PRs)](#discover-pull-requests-from-origin-same-repo-prs)
+    * [Discover pull requests from forks](#discover-pull-requests-from-forks)
+    * [Quick cheat-sheet](#quick-cheat-sheet)
+  * [What you should see](#what-you-should-see)
+  * [Step 1: Create another branch (`feature/ui`) locally and push](#step-1-create-another-branch-featureui-locally-and-push)
+  * [Step 2: Let MBP discover and build the new branch](#step-2-let-mbp-discover-and-build-the-new-branch)
+  * [Steps 3, 4, 5 & 6: Open PR → Gate → Merge to `main` → Cleanup](#steps-3-4-5--6-open-pr--gate--merge-to-main--cleanup)
+  * [Verify the result (code + running app)](#verify-the-result-code--running-app)
+* [Conclusion](#conclusion)
+* [References](#references)
 
 ---
 
 ## Introduction
 
 In this session we’ll set up a **Jenkins Multi-Branch Pipeline (MBP)** that automatically discovers branches/PRs and runs the pipeline wherever a `Jenkinsfile` exists. You’ll see how MBP maps cleanly to **trunk-based development**: short-lived feature branches, PR-aware builds, and `main` that stays releasable.
-We’ll create an MBP against a **private GitHub repo**, push a new branch, open a PR, manually rescan (no webhooks yet), and watch Jenkins build/deploy a **Dockerized Python app** that listens on **port 5000**. (Note: 5000 is also commonly used by Jenkins agents in JNLP mode—we’re **not** using that agent port here; this is just informational.) We’ll finish by merging to `main`, rescanning, and verifying the app locally.
+We’ll create an MBP against a **private GitHub repo**, push a new branch, open a PR, manually rescan (no webhooks yet), and watch Jenkins build/deploy a **Dockerized Python app** that listens on **port 5000**.
 
 ---
 
 
 # Multi-Branch Pipelines (MBP)
 ### Multi-Branch Pipelines — What they are and why they matter
+
+![Alt text](/images/7a.png)
 
 **Multi-Branch Pipeline (MBP)** is a Jenkins job type that scans your SCM and **automatically creates a child pipeline for every branch/PR/tag** that contains a `Jenkinsfile`. Builds are triggered by **webhooks** on pushes and PR updates, and jobs are **retired** when branches/PRs are closed. In practice, MBP maps CI directly to your branching strategy and adds **PR-aware** builds (Head/Merge) with status checks back to the repo.
 
@@ -96,129 +110,71 @@ With that mental model, here’s the **“what & why”** of MBP at a glance:
 
 ## Trunk-Based CI/CD: Multibranch Flow
 
-Assumptions: **Jenkins Multibranch Pipeline (MBP)**, repo with **branch protection + required checks**, containerized builds.
+![Alt text](/images/7b.png)
+
+Assumptions: **Jenkins Multibranch Pipeline (MBP)**, **branch protection + required checks**, and **containerized builds**.
 
 ---
 
 ### 1) Create branch (`feature/ui-font`)
 
-**What happens**
-
-* Developer branches from the latest `main`. Branches are short-lived and consistently named (`feature/*`, `bugfix/*`) for CI filters.
-
-**Why it matters**
-
-* Trunk-based works because changes are small and fast to review/merge; staying close to `main` minimizes rework.
-
-**Good practice**
-
-* Rebase/merge with `main` early and often, or enable **Require branch to be up to date before merging**.
-* Enforce naming via server-side rules or a pre-receive hook.
+**What happens:** Branch from the latest `main`. Keep branches short-lived and predictably named (`feature/*`, `bugfix/*`) so CI filters work well.
+**Why:** Small, frequent changes keep reviews quick and merges clean.
+**Good practice:** Rebase/merge with `main` often (or enforce **Require branch to be up to date before merging**). Enforce naming with repo rules or a pre-receive hook.
 
 ---
 
-### 2) Push → **Branch job (build-only, fast)**
+### 2) Push → **Branch job** *(build-only, target ≤5m)*
 
-**Trigger**
-
-* Every push to the feature branch (webhook-first; periodic scan as safety net).
-  With MBP **“Exclude branches that are also filed as PRs”**, branch builds **stop** once a PR opens.
-
-**What runs**
-
-* **Lint/format → Compile → Unit tests → Coverage** (fast, code-centric checks).
-* **Package + build the container image** (do not run it).
-* **Publish artifacts/metadata** (JAR/image digest, build info; optional SBOM/signature).
-
-**Why build-only**
-
-* Keeps feedback ≤ **5 minutes** and avoids spending environment resources on obvious breakages.
-
-**Operator tips**
-
-* Cache deps (e.g., Maven `.m2`).
-* Serialize per branch: `disableConcurrentBuilds()` + `milestone()` so the newest push “wins”.
+**Trigger:** Every push to the feature branch (webhook preferred; scheduled scan as backup). With **Exclude branches that are also filed as PRs**, branch builds **stop** once a PR opens.
+**What runs:** **Lint/format → compile → unit tests → coverage**; **package & build container image** (do **not** run it); **publish artifacts/metadata** (image digest, build info; optional SBOM/signature).
+**Why:** Fast feedback for obvious breakages without consuming environments.
+**Ops tip:** Cache dependencies; add `disableConcurrentBuilds()` + `milestone()` so the newest push wins.
 
 ---
 
-### 3) Open PR → **PR job (preview environment)**
+### 3) Open PR → **PR job** *(needs app running)*
 
-**Trigger**
+**Trigger:** On PR open and each update. Prefer PR strategies **Head + Merge** to test the PR tip and its merge with current `main`.
+**What runs (shift-left order):**
 
-* On PR open and each update. Use PR strategies **Head + Merge** to test both the branch tip and its merge projection into `main`.
-
-**What runs (order to “shift left”)**
-
-1. **Light SAST + dependency (manifest) scan** on code/lockfiles.
-2. **Build image → image scan** (e.g., Trivy); **block on High/Critical**.
-3. **Deploy an ephemeral preview** (namespace/stack per PR).
+1. **Light SAST + dependency scan** on code/manifests.
+2. **Build image → image scan** (block on High/Critical).
+3. **Deploy ephemeral preview** (namespace/stack per PR).
 4. **Integration/E2E smoke** against the running app.
-5. **Teardown** preview on completion/PR close (TTL just in case).
-
-**Why it matters**
-
-* You prove the change **runs** and integrates *before* it can merge—unit tests can’t catch integration or deploy issues.
-
-**Forks & secrets**
-
-* Trust policies restrict what runs for forks; run reduced checks when secrets aren’t available.
+5. **Teardown** preview on completion/PR close (TTL as safety).
+   **Why:** Proves the change **runs** and **integrates** before merge—things unit tests alone can’t surface.
+   **Forks/secrets:** Use trust policies; run reduced checks when secrets aren’t available.
 
 ---
 
-### 4) **Gate the merge on deploy success**
+### 4) **Gate the merge on deploy success** *(required checks)*
 
-**Rule**
-
-* PR must have **all required checks green**, including a status such as **`deploy-preview: succeeded`**, plus **“up-to-date with base”** so results reflect current `main`.
-
-**Flow**
-
-* If anything is red: fix → push → PR job re-runs automatically.
-* Optional: **auto-merge on green** (opt-in label). High-throughput teams may add a **merge queue/train** to serialize and auto-retest.
-
-**Why**
-
-* This is what keeps `main` continuously releasable.
+**Rule:** All required checks must be **green**, including a status like **`deploy-preview: succeeded`**, and the PR must be **up-to-date with base**.
+**Flow:** If any check is red, fix → push → PR job auto-rebuilds. Optionally enable **auto-merge on green** (or use a merge queue/train).
+**Why:** Keeps `main` continuously releasable.
 
 ---
 
-### 5) **Post-merge on `main`**
+### 5) **Merge to `main`** *(promote artifact)*
 
-**Trigger**
-
-* Merging (squash/merge/rebase) creates commits on `main`; MBP runs the `main` job.
-
-**What runs**
-
-* **Reuse the signed artifact/image** built in the PR (preferred) or **rebuild deterministically**.
-* **Deploy to dev/stage**, run smoke checks; **promote** to higher environments with approvals/change control.
-* **Full, authenticated DAST** belongs here (staging), not in PR; block on High/Critical.
-
-**Why reuse artifacts**
-
-* Promoting the **same digest** PR → stage → prod gives auditability and prevents “works on my build” drift.
-
-**Release hygiene**
-
-* Record release notes/provenance; attach SBOM and signatures to the artifact.
+**Trigger:** Merging (squash/merge/rebase) creates a new commit on `main`; MBP runs the **main** job.
+**What runs:** **Reuse the signed artifact/image** built in the PR (preferred) or **rebuild deterministically**; **deploy to dev/stage**, run smoke checks; **promote** onward with approvals/change control; run **full, authenticated DAST** here (not in PR) and block on High/Critical.
+**Why reuse:** Promoting the **same digest** from PR → stage → prod improves auditability and eliminates “works on my build” drift.
+**Hygiene:** Record release notes/provenance; attach SBOM/signatures.
 
 ---
 
 ### 6) **Cleanup**
 
-**What happens**
-
-* Git host **auto-deletes the source branch** on merge (same-repo PRs, if enabled).
-  Jenkins MBP **orphan cleanup** then prunes the retired branch job and workspace.
-  A preview-env **GC/TTL** reaps stray namespaces/volumes/DBs.
-
-**Why**
-
-* Keeps Jenkins lean and cloud costs down; removes stale jobs and environments.
+**What happens:** Git host can **auto-delete the source branch** after merge (same-repo PRs). MBP’s **orphan cleanup** prunes the retired branch job/workspace. A preview-env **GC/TTL** reaps stray namespaces/volumes/DBs.
+**Why:** Keeps Jenkins lean and your cloud bill down; removes stale jobs and environments.
 
 ---
 
 # Demo: Jenkins **Multi-Branch Pipeline (MBP)**
+
+![Alt text](/images/7c.png)
 
 ## Why MBP (vs a single Pipeline with many branches)
 
@@ -234,9 +190,12 @@ Assumptions: **Jenkins Multibranch Pipeline (MBP)**, repo with **branch protecti
 
 ## What we’ll do
 
-* Create a **Multibranch Pipeline** that points at a private GitHub repo.
-* Push a new branch (`feature/ui`) and watch MBP discover it.
-* Discuss the **branch/PR strategies** you should use.
+* **Create an MBP job** (GitHub Branch Source) → scan the repo, discover the `Jenkinsfile`, and run a **baseline `main` build**.
+* **Create `feature/ui`**, make a tiny UI change, **push**, then **manually rescan** (no webhooks) so MBP finds the branch and runs its **branch job**.
+* **Open a PR** (`feature/ui` → `main`) → MBP switches to a **PR job**; we run the same pipeline and **report status back to GitHub**.
+* **Merge when green**, then **rescan** so MBP detects the new commit on `main` and runs the **main deploy**.
+* **Verify** locally at **[http://localhost:5000](http://localhost:5000)** and inspect the archived **deploy-info** artifact.
+* **Cleanup:** optionally auto-delete the feature branch on merge; MBP prunes retired branch jobs/workspaces.
 
 ---
 
@@ -248,7 +207,7 @@ Assumptions: **Jenkins Multibranch Pipeline (MBP)**, repo with **branch protecti
 
 ---
 
-## Step 1: Create the MBP job
+## Step 0: Create the MBP job
 
 **New Item →** name `flask-mbp` → choose **Multibranch Pipeline**.
 
@@ -291,29 +250,33 @@ Assumptions: **Jenkins Multibranch Pipeline (MBP)**, repo with **branch protecti
 
 ---
 
-### Discover pull requests from origin (same repo PRs)
+### Discover pull requests from origin (same-repo PRs)
 
-Choose **one** PR strategy (or **Both**):
+Pick **one** strategy (or **Both**) for how Jenkins builds PRs:
 
-1. **The current pull request revision** *(Head)*
+1. **The current pull request revision (Head)** — *“your code only”*
 
-   * **What it tests:** The PR tip **as-is** (no merge with `main`).
-   * **Good for:** Quick feedback on the change itself.
-   * **Example:** `main` added a new API last hour; PR still compiles against the old API → Head build passes but might fail after merge.
+   * **Builds:** PR tip **as-is** (no merge with `main`).
+   * **Rebuilds when:** the **PR updates** (not when `main` moves).
+   * **What it tells you (PR job):** Does **your change alone** build/test/deploy?
+   * **Limit:** Can miss failures that appear **after** merging with newer `main`.
+   * **Example:** `main` added a breaking API—Head passes; merge would fail.
 
-2. **Merging the pull request with the current target branch revision** *(Merge)*
+2. **Merging the pull request with the current target branch revision (Merge)** — *“your code + current main”*
 
-   * **What it tests:** A **synthetic merge** = current **`main` tip + PR head**.
-   * **Good for:** “Will it work if we merge **right now**?”
-   * **Example:** `main` bumped a dependency; the PR forgot to adapt → Merge build fails, preventing a broken `main`.
+   * **Builds:** **synthetic merge** = `main@tip` + `PR@head` (what would land **right now**).
+   * **Rebuilds when:** the **PR updates** **or** when **`main` moves** (via webhook/scan).
+   * **What it tells you (PR job):** Would the **post-merge** build succeed? Catches integration drift and conflicts.
+   * **Relation to the `main` build:** If you merged **immediately**, the `main` build should look like **this** result.
+   * **Example:** `main` bumped a library; Merge build fails until PR adapts.
 
-3. **Both the current pull request revision and the pull request merged with the current target branch revision**
+3. **Both (Head + Merge)** — *verify both views*
 
-   * **What it tests:** **Two builds per PR update**: Head **and** Merge.
-   * **Good for:** Maximum coverage (PR-only issues + integration drift).
-   * **Example:** Head passes; Merge fails because `main` moved—developer rebases/updates, then both pass.
+   * **Builds:** **two** jobs per PR event: **Head** *(your code only)* and **Merge** *(your code + current main)*.
+   * **What it tells you:** You get **both signals**: PR-only regressions **and** after-merge outcome.
+   * **Production tip:** Make the **Merge** status a **required check**, since it reflects what `main` would be **after** the merge.
 
-> **Tip:** If you pick **Both**, make the **Merge** status the **required check** in branch protection.
+> **Rule of thumb:** If you must choose one, pick **Merge** to know what `main` will look like after merging. If you have capacity, choose **Both** to verify **your code alone** *and* **your code + current main**.
 
 ---
 
@@ -376,7 +339,7 @@ Click **Save**.
 
 ---
 
-## Step 2: Create another branch (`feature/ui`) locally and push
+## Step 1: Create another branch (`feature/ui`) locally and push
 
 > ⚠️ You’ll use a **Personal Access Token (PAT)** in the clone URL for a private repo. Be careful not to paste it on screen.
 
@@ -416,7 +379,7 @@ git push flask-private feature/ui
 
 ---
 
-## Step 3: Let MBP discover and build the new branch
+## Step 2: Let MBP discover and build the new branch
 
 If webhooks are set up, Jenkins will discover `feature/ui` automatically. If not:
 
@@ -430,51 +393,89 @@ If webhooks are set up, Jenkins will discover `feature/ui` automatically. If not
 
 ---
 
-## Step 4: Open PR and Cleanup
+## Steps 3, 4, 5 & 6: Open PR → Gate → Merge to `main` → Cleanup
 
-> **Heads-up about port 5000:** our Python app listens on **port 5000**. That’s also the port commonly used by the **Jenkins agent’s JNLP** mode. We’re **not** using that agent port in this demo, so there’s no conflict; this is just informational.
+> **Heads-up about ports:** our Flask app listens on **port 5000**. Jenkins’ JNLP/inbound agent uses **port 50,000** by default, which we’re not using here—so there’s no conflict.
 
-### What we’re doing
-
-Open a PR from `feature/ui` → `main`, **manually** rescan so Jenkins MBP discovers/builds the PR, merge it, then **verify** the change landed and the app runs on `localhost:5000`.
 
 ---
 
-### Create and run the PR (GitHub → Jenkins)
+### 3) Open PR → PR job runs (preview-style build)
+
+**Goal:** create a PR from `feature/ui` to `main` and have MBP build it.
+
+**Do this (GitHub → Jenkins):**
 
 1. **Open the PR (GitHub)**
 
    * In your repo, click **Compare & pull request** (or **Pull requests → New pull request**).
    * Set **base:** `main`, **compare:** `feature/ui`.
    * Add a short Title/Description → **Create pull request**.
-
 2. **(Optional) Auto-delete branch on merge (GitHub)**
 
    * **Settings → General → Pull Requests →** enable **Automatically delete head branches**.
+3. **Rescan in Jenkins (manual, since no webhooks yet)**
 
-3. **Rescan in Jenkins to discover the PR (manual)**
-
-   * In Jenkins, open your MBP (e.g., **flask-mbp**) → **Scan Repository Now**.
-   * Refresh; a **PR job** (e.g., `PR-1`) should appear under the MBP.
-
+   * Open your MBP (e.g., **flask-mbp**) → **Scan Repository Now**.
+   * You should now see a **PR job** (e.g., `PR-1`) under the MBP.
 4. **Run the PR job**
 
    * Open the **PR job** → **Build Now** (or it may start right after the scan).
-   * With your shared `Jenkinsfile`, the build will:
+   * With our shared `Jenkinsfile`, the PR job will:
 
-     * **Build & push** `docker.io/cloudwithvarjosh/cwvj-flask:$BUILD_NUMBER` (and `:latest`),
-     * **Deploy** a container **locally on the agent** as `cwvj-flask` on **port 5000**,
-     * Write & archive `deploy-info-$BUILD_NUMBER.txt`.
+     * **Build & push** `docker.io/cloudwithvarjosh/cwvj-flask:$BUILD_NUMBER` (and `:latest`)
+     * **Deploy** a container on the **local agent** as `cwvj-flask` on **port 5000**
+     * **Write & archive** `deploy-info-$BUILD_NUMBER.txt`
+   * Jenkins posts the build status back to the PR in GitHub.
 
-5. **Merge the PR (GitHub)**
+> **Note — Protecting `main` in GitHub (quick setup)**
+>
+> * **Where:** Repo → **Settings** → **Branches** → **Add rule** (classic) **or** **Add ruleset** (newer model).
+> * **Pattern:** Set **Branch name pattern** to `main`.
+> * **Common protections you’ll enable for `main`:**
+>
+>   * **Require a pull request before merging** (blocks direct pushes to `main`—you’ll often see “you can’t push directly to this branch”).
+>   * **Require status checks to pass** (e.g., Jenkins “PR Head/Merge” checks).
+>   * **Require branches to be up to date** (forces a rebase/merge with the latest `main` before merging).
+>   * **Require approvals** (e.g., at least 1 reviewer, dismiss stale reviews on new commits).
+>   * Optional hardening: **restrict who can push**, **require signed commits**, **enforce linear history**, **lock branch**.
+> * **Ruleset vs classic rule:** Rulesets add richer targeting and org-level control; classic rules are simpler. Either is fine for this demo.
+> * **Heads-up (plans):** Some options may be limited or “not enforced” on personal private repos without GitHub Team/Enterprise.
 
-   * When the Jenkins check is **success**, click **Merge**.
-   * If auto-delete is enabled, GitHub deletes `feature/ui` after merge.
 
-6. **Rescan to build `main` (manual)**
+---
 
-   * Back in Jenkins MBP, click **Scan Repository Now** again so Jenkins sees the merge.
-   * The **`main`** job will run (or click **Build Now**) and deploy the new tag the same way.
+### 4) Gate the merge on success (required checks)
+
+**Idea:** merge only when the PR build(s) are **green**.
+
+* In a production setup you’d enforce **required checks** (e.g., “Build”, “Deploy preview succeeded”, “Up-to-date with base”).
+* For this demo, once the Jenkins check on the PR shows **success**, you can proceed to merge.
+* If any check is **red**, fix the code, push, **rescan**, and the PR job will re-run.
+
+---
+
+### 5) Merge to `main` → run `main` job
+
+**Do this:**
+
+1. **Merge the PR (GitHub)**
+
+   * Click **Merge**. If auto-delete is enabled, GitHub removes `feature/ui` after merge.
+2. **Rescan so MBP sees the new commit on `main`**
+
+   * Back in Jenkins MBP, click **Scan Repository Now**.
+   * The **`main` job** will run (or click **Build Now**) and execute the same pipeline: **Build / Push / Deploy / Archive / Test**.
+3. **Verify locally**
+
+   * The container runs on the agent host at **[http://localhost:5000](http://localhost:5000)**.
+
+---
+
+### 6) Cleanup
+
+* **GitHub** (optional): auto-deletes the source branch after merge.
+* **Jenkins MBP**: prunes retired **branch/PR jobs** and their **workspaces** per orphan-cleanup policy.
 
 ---
 
@@ -483,7 +484,7 @@ Open a PR from `feature/ui` → `main`, **manually** rescan so Jenkins MBP disco
 **A) Container is running**
 
 ```bash
-docker ps --filter "name=cwvj-flask"
+docker ps
 # Expect a container named cwvj-flask publishing 0.0.0.0:5000->5000/tcp
 ```
 
@@ -496,8 +497,7 @@ curl -s http://localhost:5000
 
 **C) Deployment info archived in Jenkins**
 
-* In the PR (or main) job → **Build #N** → **Artifacts** → open `deploy-info-N.txt`.
-  It should include:
+* In the PR (or main) job → **Build #N** → **Artifacts** → open `deploy-info-N.txt`:
 
   ```
   build: N
@@ -510,14 +510,13 @@ curl -s http://localhost:5000
 
 **D) Code landed on `main`**
 
-* On **GitHub → main branch**, open `app.py` and confirm it contains:
+* On **GitHub → main**, open `app.py` and confirm it contains:
 
   ```python
   UI = "We've added a new Feature"
   ```
 
-*(Tip: if Jenkins runs on a remote agent/VM, run the `docker`/`curl` commands **on that agent host**, since the container is started there.)*
-
+> *Tip:* If Jenkins runs on a remote agent/VM, run the `docker`/`curl` commands **on that agent host**, since the container starts there.
 
 ---
 
