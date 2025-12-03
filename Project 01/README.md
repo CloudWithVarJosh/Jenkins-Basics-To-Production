@@ -1,7 +1,10 @@
 # Complete DevSecOps CI/CD Pipeline | Multi-AZ Amazon EKS + Jenkins + Trivy + SonarQube + ECR + GitHub
 
+---
+
 ## Video reference for this lecture is the following:
 
+[![Watch the video](https://img.youtube.com/vi/9LXZm0Fryfw/maxresdefault.jpg)](https://www.youtube.com/watch?v=9LXZm0Fryfw&ab_channel=CloudWithVarJosh)
 
 ---
 ## ⭐ Support the Project  
@@ -9,83 +12,53 @@ If this **repository** helps you, give it a ⭐ to show your support and help ot
 
 ---
 
-# **Table of Contents**
+## **Table of Contents**
 
 * [Introduction](#introduction)  
+* [Pre-requisites for this lecture](#pre-requisites-for-this-lecture)  
+  * [1. Modern SDLC Explained](#1-modern-sdlc-explained--build-automation--real-world-insights)  
+  * [2. CI/CD Explained](#2-cicd-explained--how-pipelines-work--branching-strategies)  
+  * [3. Maven Tutorial for DevOps](#3-maven-tutorial-for-devops--maven-beginner-tutorial)  
+  * [4. SonarQube](#4-sonarqube)  
 * [**Lab:** Install Jenkins Controller on EC2](#lab-install-jenkins-controller-on-ec2)  
-  * [1. Create the EC2 instance](#1-create-the-ec2-instance)  
-  * [2. Connect to the instance](#2-connect-to-the-instance)  
-  * [3. Install Java 21 (JDK)](#3-install-java-21-jdk)  
-  * [4. Add Jenkins repository and install](#4-add-jenkins-repository-and-install)  
-  * [5. Start and enable Jenkins](#5-start-and-enable-jenkins)  
-  * [6. Access Jenkins UI and unlock](#6-access-jenkins-ui-and-unlock)  
-* [**Lab:** Configure SSH-based Jenkins Agent on EC2](#lab-configure-ssh-based-jenkins-agent-on-ec2)  
-  * [1. Create the EC2 instance](#1-create-the-ec2-instance-1)  
-  * [2. Connect to the instance](#2-connect-to-the-instance-1)  
-  * [3. Install Java 21](#3-install-java-21)  
-  * [4. Create a dedicated jenkins user](#4-create-a-dedicated-jenkins-user)  
-* [**Lab:** Add the jenkins-agent to the Jenkins Controller](#lab-add-the-jenkins-agent-to-the-jenkins-controller)  
-  * [1. Generate SSH key on the controller](#1-generate-ssh-key-on-the-controller)  
-  * [2. Copy the public key to the agent](#2-copy-the-public-key-to-the-agent)  
-  * [3. Configure the agent in Jenkins UI](#3-configure-the-agent-in-jenkins-ui)  
+  * [Create the EC2 instance](#1-create-the-ec2-instance)  
+  * [Connect to the instance](#2-connect-to-the-instance)  
+  * [Install Java 21](#3-install-java-21-jdk)  
+  * [Install Jenkins](#4-add-jenkins-repository-and-install)  
+  * [Start Jenkins](#5-start-and-enable-jenkins)  
+  * [Access Jenkins UI](#6-access-jenkins-ui-and-unlock)  
+* [**Lab:** Configure SSH-based Jenkins Agent](#lab-configure-ssh-based-jenkins-agent-on-ec2)  
+  * [Create Jenkins Agent EC2](#1-create-the-ec2-instance-1)  
+  * [Install Java on Agent](#3-install-java-21)  
+  * [Create jenkins user](#4-create-a-dedicated-jenkins-user-non-root)  
+  * [Add the Agent to Jenkins Controller](#lab-add-the-jenkins-agent-to-the-jenkins-controller)  
+  * [Generate SSH keys](#1-generate-ssh-key-on-the-controller-jenkins-user)  
+  * [Copy keys to Agent](#2-copy-the-public-key-to-the-agent)  
+  * [Configure Agent in Jenkins UI](#3-configure-the-agent-in-jenkins-ui)  
 * [**Lab:** Install SonarQube on EC2](#lab-install-sonarqube-on-ec2)  
-  * [1. Create the EC2 instance](#1-create-the-ec2-instance)  
-  * [2. Connect to the instance](#2-connect-to-the-instance)  
-  * [3. Install Java 21](#3-install-java-21)  
-  * [4. Install PostgreSQL and create DB for SonarQube](#4-install-postgresql-and-create-db-for-sonarqube)  
-  * [5. Tune kernel settings required by SonarQube](#5-tune-kernel-settings-required-by-sonarqube)  
-  * [6. Create a dedicated sonar user](#6-create-a-dedicated-sonar-user)  
-  * [7. Download and install SonarQube](#7-download-and-install-sonarqube)  
-  * [8. Configure SonarQube to use PostgreSQL](#8-configure-sonarqube-to-use-postgresql)  
-  * [9. Create a systemd service for SonarQube](#9-create-a-systemd-service-for-sonarqube)  
-  * [10. Access the SonarQube UI](#10-access-the-sonarqube-ui)  
-  * [11. Production notes for SonarQube](#11-production-notes-for-sonarqube)  
-
+    * [Create SonarQube EC2](#1-create-the-ec2-instance)  
+    * [Install Java for SonarQube](#3-install-java-21-1)  
+    * [Install PostgreSQL](#4-install-postgresql-and-create-db-for-sonarqube)  
+    * [Configure kernel settings](#5-tune-kernel-settings-required-by-sonarqube)  
+    * [Create sonar user](#6-create-a-dedicated-sonar-user)  
+    * [Download SonarQube](#7-download-and-install-sonarqube)  
+    * [Configure SonarQube Database](#8-configure-sonarqube-to-use-postgresql)  
+    * [Create SonarQube systemd service](#9-create-a-systemd-service-for-sonarqube)  
+    * [Access SonarQube UI](#10-access-the-sonarqube-ui)  
+    * [Production notes](#11-production-notes-for-sonarqube)  
 * [**Demo:** End-to-End Production DevSecOps Pipeline](#demo-end-to-end-production-devsecops-pipeline)  
-  * [What are we going to do?](#what-are-we-going-to-do)  
-  * [**Stage 1:** Git Checkout & Jenkins Pipeline Job Setup](#stage-1-git-checkout--jenkins-pipeline-job-setup)  
-  * [**Stage 2:** Trivy FS Scan](#stage-2-trivy-fs-scan-filesystem-vulnerability-scan)  
-  * [**Stage 3:** Build and Sonar](#stage-3-build-and-sonar-maven-build-sast-scan-coverage-enforcement)  
-    * [Sonar project, Quality Gate, Token, Maven tool setup](#sonar-project-quality-gate-token-maven-tool-setup)  
-  * [**Stage 4:** ECR Login](#stage-4-ecr-login-authenticate-jenkins-agent-to-amazon-ecr)  
-    * [Install AWS CLI on Jenkins Agent](#prerequisite-install-aws-cli-on-jenkins-agent)  
-    * [Grant Jenkins Agent Access to Amazon ECR](#prerequisite-grant-jenkins-agent-access-to-amazon-ecr)  
-    * [Create ECR Repository](#create-the-ecr-repository)  
-  * [**Stage 5:** Build Image](#stage-5-build-image-install-docker-build-container-image)  
-    * [Install Docker Engine](#install-docker-engine-on-jenkins-agent)  
-    * [Create Dockerfile](#create-dockerfile)  
-  * [**Stage 6:** Trivy Image Scan](#stage-6-trivy-image-scan-container-image-vulnerability-scan)  
-  * [**Stage 7:** Push to ECR](#stage-7-push-to-ecr-push-built-image-to-amazon-ecr)  
-  * [**Stage 8:** Create Kubernetes Manifests](#stage-8-create-kubernetes-manifests-deployment--service)  
-    * [Deployment](#deployment-deploy-svcyaml)  
-    * [Service](#service-deploy-svcyaml--same-file-or-separate)  
-    * [Toplogy Spread Constraints](#topologyspreadconstraints--explanation)  
-    * [`sed` explanation](#sed-command--step-by-step-explanation)  
-  * [**Stage 9:** Deploy to Kubernetes](#stage-9-deploy-to-kubernetes-create-cluster-grant-access-deploy-app)  
-    * [Create EKS Cluster](#create-the-eks-cluster--config-with-one-line-comments)  
-    * [Install kubectl](#install-kubectl-on-the-jenkins-agent)  
-    * [Modify IAM Role](#modify-jenkins-agent-role-to-allow-kubeconfig-update)  
-    * [Edit aws-auth](#why-edit-aws-auth-and-how)  
-    * [RBAC permissions](#grant-precise-rbac-least-privilege)  
-    * [Deployment script line-by-line](#line-by-line-explanation-of-the-pipeline-shell-block)  
-  * [Post Actions](#post-actions-in-jenkins-pipeline)  
-* [Trigger pipeline on Git push](#trigger-pipeline-on-git-push)  
-  * [Recommended approach: Multibranch Pipeline + GitHub webhook](#recommended-approach-multibranch-pipeline--github-webhook)  
-  * [Alternative (simple): Poll SCM](#alternative-simple-poll-scm)  
-  * [Security / production tips](#security--production-tips)  
-* [How this pipeline can be improved (Production Enhancements)](#how-this-pipeline-can-be-improved-production-enhancements)  
-  * [1. Kubernetes Ingress / Gateway API instead of NodePort (Highly recommended)](#1-kubernetes-ingress--gateway-api-instead-of-nodeport-highly-recommended)  
-  * [2. Multibranch Pipelines (Critical for real CI/CD)](#2-multibranch-pipelines-critical-for-real-cicd)  
-  * [3. GitOps with ArgoCD (True production pattern)](#3-gitops-with-argocd-true-production-pattern)  
-  * [4. Use DNS names instead of IPs (Always in production)](#4-use-dns-names-instead-of-ips-always-in-production)  
-  * [5. Use image digests instead of tags (Enterprise best practice)](#5-use-image-digests-instead-of-tags-enterprise-best-practice)  
-  * [6. Signed images + policy enforcement](#6-signed-images--policy-enforcement)  
-  * [7. Centralised secrets management](#7-centralised-secrets-management)  
-  * [8. Observability integration](#8-observability-integration)  
-  * [9. Policy-as-Code and compliance scans](#9-policy-as-code-and-compliance-scans)  
-  * [10. Helm or Kustomize to manage Kubernetes manifests](#10-helm-or-kustomize-to-manage-kubernetes-manifests)  
-  * [11. Argo Rollouts / Blue-Green / Canary deployments](#11-argo-rollouts--blue-green--canary-deployments)  
-  * [12. Automated cleanups & cost optimisation](#12-automated-cleanups--cost-optimisation)  
+  * [Stage 1: Git Checkout](#stage-1-git-checkout--jenkins-pipeline-job-setup)  
+  * [Stage 2: Trivy FS Scan](#stage-2-trivy-fs-scan-filesystem-vulnerability-scan)  
+  * [Stage 3: Build and Sonar](#stage-3-build-and-sonar-maven-build-sast-scan-coverage-enforcement)  
+  * [Stage 4: ECR Login](#stage-4-ecr-login-authenticate-jenkins-agent-to-amazon-ecr)  
+  * [Stage 5: Build Image](#stage-5-build-image-build-container-image)  
+  * [Stage 6: Trivy Image Scan](#stage-6-trivy-image-scan-container-image-vulnerability-scan)  
+  * [Stage 7: Push to ECR](#stage-7-push-to-ecr-push-built-image-to-amazon-ecr)  
+  * [Stage 8: Create Kubernetes Manifests](#stage-8-create-kubernetes-manifests-deployment--service)  
+  * [Stage 9: Deploy to Kubernetes](#stage-9-deploy-to-kubernetes-create-cluster-grant-access-deploy-app)  
+* [Post Actions in Jenkins Pipeline](#post-actions-in-jenkins-pipeline)  
+* [Trigger Pipeline on Git Push](#trigger-pipeline-on-git-push)  
+* [How this pipeline can be improved](#how-this-pipeline-can-be-improved-production-enhancements)  
 * [Conclusion](#conclusion)  
 * [References](#references)  
 
@@ -261,19 +234,12 @@ Environment="JAVA_OPTS=-Duser.timezone=Asia/Kolkata"
 EOF
 ```
 
-Apply and restart:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl restart jenkins
-sudo systemctl status jenkins
-```
-
 ---
 
 ## **5. Start and enable Jenkins**
 
 ```bash
+sudo systemctl daemon-reload
 sudo systemctl enable jenkins
 sudo systemctl start jenkins
 sudo systemctl status jenkins
@@ -378,6 +344,8 @@ sudo useradd -m -s /bin/bash jenkins
 
 
 ## **Lab: Add the jenkins-agent to the Jenkins Controller**
+
+![Alt text](/images/me2.png)
 
 SSH into controller:
 
@@ -621,7 +589,7 @@ sudo apt-get install -y openjdk-21-jre
 java -version
 ```
 
-You should see Java 17.
+You should see Java 21.
 
 ### 4. Install PostgreSQL and create DB for SonarQube
 
@@ -907,6 +875,8 @@ In many production deployments:
 # Demo: End-to-End Production DevSecOps Pipeline
 
 ## What are we going to do?
+
+![Alt text](/images/me1.png)
 
 In this demo, we build a **production-grade DevSecOps pipeline** using **Jenkins**, **Trivy**, **SonarQube**, **AWS ECR**, and **Amazon EKS**.
 The pipeline enforces **multiple security gates** by **scanning source code**, **running unit tests**, **performing static analysis**, **scanning the container image**, and **deploying only when every stage passes**.
@@ -2173,6 +2143,15 @@ kubectl rollout status -n cwvj-devsecops deployment/cwvj-devsecops-demo --timeou
 
 Create `eks-config.yaml` and add these 1-line comments for clarity:
 
+![Alt text](/images/me3.png)
+
+#### Install Required Tools
+
+Ensure the following tools are installed on your local machine or cloud jump-host:
+
+* [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+* [eksctl](https://eksctl.io/installation/)
+
 ```yaml
 apiVersion: eksctl.io/v1alpha5            # eksctl cluster config API version
 kind: ClusterConfig                      # resource kind for eksctl
@@ -2649,12 +2628,6 @@ pipeline {
 
 ---
 
-Here is a **fully enhanced, correctly sequenced, production-prioritised** version of the section.
-I placed **video-referenced improvements first** (highest importance), followed by core production-grade improvements, followed by ecosystem tooling enhancements.
-All points are crisp, value-dense, and aligned with your lecture style.
-
----
-
 ## **How this pipeline can be improved (Production Enhancements)**
 
 The pipeline you built is intentionally simple so you can learn every moving part clearly.
@@ -2668,8 +2641,8 @@ Below are the *most important upgrades*.
 In this demo, we used a simple NodePort due to its simplicity.
 In production, teams use **Ingress controllers** or the **Gateway API** for TLS termination, host-path routing, and managed load balancers.
 I already have a complete lecture demonstrating AWS Load Balancer Controller, TLS certificates, and routing patterns. Deploy your app using that flow to experience real-world ingress.
-**Video:** [https://www.youtube.com/watch?v=ngyegIE_5FM&list=PLmPit9IIdzwSv2zwizysG6OwWUACpQFN0&index=3&t=1s](https://www.youtube.com/watch?v=ngyegIE_5FM&list=PLmPit9IIdzwSv2zwizysG6OwWUACpQFN0&index=3&t=1s)
-**GitHub Notes:** [https://github.com/CloudWithVarJosh/YouTube-Standalone-Lectures/tree/main/Lectures/03-ing-eks](https://github.com/CloudWithVarJosh/YouTube-Standalone-Lectures/tree/main/Lectures/03-ing-eks)
+**Video:** [https://www.youtube.com/watch?v=ngyegIE_5FM&list=PLmPit9IIdzwSv2zwizysG6OwWUACpQFN0&index=3&t=1s](https://www.youtube.com/watch?v=ngyegIE_5FM&list=PLmPit9IIdzwSv2zwizysG6OwWUACpQFN0&index=3&t=1s)  
+**GitHub Notes:** [https://github.com/CloudWithVarJosh/YouTube-Standalone-Lectures/tree/main/Lectures/03-ing-eks](https://github.com/CloudWithVarJosh/YouTube-Standalone-Lectures/tree/main/Lectures/03-ing-eks)  
 
 ---
 
@@ -2678,8 +2651,8 @@ I already have a complete lecture demonstrating AWS Load Balancer Controller, TL
 Real teams don’t push to main directly.
 A multibranch pipeline auto-discovers branches and PRs, runs CI on each, and only merges when checks pass.
 I already have a deep-dive lecture on this using a practical project.
-**Video:** [https://www.youtube.com/watch?v=Eq-HHLtSJM4&list=PLmPit9IIdzwSiYCKOtXUGNwytXXiJ8Rv8&index=7](https://www.youtube.com/watch?v=Eq-HHLtSJM4&list=PLmPit9IIdzwSiYCKOtXUGNwytXXiJ8Rv8&index=7)
-**GitHub Notes:** [https://github.com/CloudWithVarJosh/Jenkins-Basics-To-Production/tree/main/Day%2007](https://github.com/CloudWithVarJosh/Jenkins-Basics-To-Production/tree/main/Day%2007)
+**Video:** [https://www.youtube.com/watch?v=Eq-HHLtSJM4&list=PLmPit9IIdzwSiYCKOtXUGNwytXXiJ8Rv8&index=7](https://www.youtube.com/watch?v=Eq-HHLtSJM4&list=PLmPit9IIdzwSiYCKOtXUGNwytXXiJ8Rv8&index=7). 
+**GitHub Notes:** [https://github.com/CloudWithVarJosh/Jenkins-Basics-To-Production/tree/main/Day%2007](https://github.com/CloudWithVarJosh/Jenkins-Basics-To-Production/tree/main/Day%2007). 
 I kept this demo single-branch for simplicity.
 
 ---
@@ -2817,16 +2790,3 @@ Below are authoritative links and documentation used throughout this lecture:
 * Deployments: [https://kubernetes.io/docs/concepts/workloads/controllers/deployment/](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
