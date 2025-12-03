@@ -1,0 +1,47 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: cwvj-devsecops-eks
+  region: ap-south-1
+  version: "1.32"
+  tags:
+    owner: cloudwithvarjosh
+    environment: training
+    project: cwvj-devsecops-demo
+    purpose: youtube-labs
+
+availabilityZones:
+  - ap-south-1a
+  - ap-south-1b
+
+iam:
+  withOIDC: true
+
+managedNodeGroups:
+  - name: cwvj-ng-public
+    instanceType: t3.small
+    minSize: 2
+    maxSize: 2
+    desiredCapacity: 2
+    volumeSize: 20
+    privateNetworking: false
+
+    ssh:
+      allow: true
+      publicKeyName: cwvj-sj-mumbai   # your EC2 key pair name
+
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        ebs: true
+        albIngress: true
+        externalDNS: true
+        certManager: false
+        cloudWatch: false
+    labels:
+      owner: cloudwithvarjosh
+      app: devsecops-demo
+    tags:
+      node-type: public-worker
+      managed-by: eksctl

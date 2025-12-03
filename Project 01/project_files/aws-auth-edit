@@ -1,0 +1,5 @@
+mapRoles: |
+  - rolearn: arn:aws:iam::386275436648:role/jenkins-agent-role
+    username: jenkins-agent-role
+    groups:
+      - system:authenticated
