@@ -1,4 +1,4 @@
-# Day 4: Jenkins Freestyle Power-Ups — Build Parameters, Branch Input, Poll SCM & Cron Cleanup
+# Day 4: Jenkins Freestyle Power-Ups | Build Parameters, Branch Input, Poll SCM & Cron Cleanup
 
 ## Video reference for Day 4 is the following:
 
@@ -10,29 +10,24 @@ If this **repository** helps you, give it a ⭐ to show your support and help ot
 
 ---
 
-* [Introduction](#introduction)
-* [Inside `$JENKINS_HOME`: What Lives in the Jenkins Home Directory](#inside-jenkins_home-what-lives-in-the-jenkins-home-directory)
-
-  * [Top-Level Configuration (Files)](#top-level-configuration-files)
-
-    * [Why you still see “hudson”](#why-you-still-see-hudson)
-  * [Security & Identity](#security--identity)
-  * [Core Directories (State, Code, Users, Logs)](#core-directories-state-code-users-logs)
-
-    * [Jenkins is a Java web app (WAR)](#jenkins-is-a-java-web-app-war)
-  * [Workspaces & Queues](#workspaces--queues)
-
-    * [Where jobs live vs. where they run (Controller vs. Agents)](#where-jobs-live-vs-where-they-run-controller-vs-agents)
-  * [Backup Quick-Check](#backup-quick-check)
-* [Mini Demos — your pipeline foundation](#mini-demos--your-pipeline-foundation)
-
-  * [Mini Demo 1 — Add Parameters (Boolean, Choice)](#mini-demo-1--add-parameters-boolean-choice)
-  * [Mini Demo 2 — Git SCM + Branch as a Parameter](#mini-demo-2--git-scm--branch-as-a-parameter)
-  * [Mini Demo 3 — Poll SCM Trigger (no webhooks)](#mini-demo-3--poll-scm-trigger-no-webhooks)
-  * [Mini Demo 4 — Webhook Trigger (GitHub/GitLab)](#mini-demo-4--webhook-trigger-githubgitlab)
-  * [Mini Demo 5 — Scheduled Nightly (Cron) + Workspace Cleanup](#mini-demo-5--scheduled-nightly-cron--workspace-cleanup)
-* [Conclusion](#conclusion)
-* [References](#references)
+* [Introduction](#introduction)  
+* [Inside `$JENKINS_HOME`: What Lives in the Jenkins Home Directory](#inside-jenkins_home-what-lives-in-the-jenkins-home-directory)  
+  * [Top-Level Configuration (Files)](#top-level-configuration-files)  
+    * [Why you still see “hudson”](#why-you-still-see-hudson)  
+  * [Security & Identity](#security--identity)  
+  * [Core Directories (State, Code, Users, Logs)](#core-directories-state-code-users-logs)  
+    * [Jenkins is a Java web app (WAR)](#jenkins-is-a-java-web-app-war)  
+  * [Workspaces & Queues](#workspaces--queues)  
+    * [Where jobs live vs. where they run (Controller vs. Agents)](#where-jobs-live-vs-where-they-run-controller-vs-agents)  
+  * [Backup Quick-Check](#backup-quick-check)  
+* [Mini Demos — your pipeline foundation](#mini-demos--your-pipeline-foundation)  
+  * [Mini Demo 1 — Add Parameters (Boolean, Choice)](#mini-demo-1--add-parameters-boolean-choice)  
+  * [Mini Demo 2 — Git SCM + Branch as a Parameter](#mini-demo-2--git-scm--branch-as-a-parameter)  
+  * [Mini Demo 3 — Poll SCM Trigger (no webhooks)](#mini-demo-3--poll-scm-trigger-no-webhooks)  
+  * [Mini Demo 4 — Webhook Trigger (GitHub/GitLab)](#mini-demo-4--webhook-trigger-githubgitlab)  
+  * [Mini Demo 5 — Scheduled Nightly (Cron) + Workspace Cleanup](#mini-demo-5--scheduled-nightly-cron--workspace-cleanup)  
+* [Conclusion](#conclusion)  
+* [References](#references)  
 
 ---
 
