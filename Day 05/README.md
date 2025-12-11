@@ -106,6 +106,9 @@ docker exec -u root -it jenkins chmod 666 /var/run/docker.sock
 
 > Note: This is convenient for a lab. For a safer setup, map the socket’s group and add `jenkins` to it. You can switch later.
 
+Docker recreates its socket on every reboot or when the Docker daemon restarts, so any manual `chmod` changes are lost.
+To make access persistent and safe, add the `jenkins` user to the host `docker` group so Jenkins can use the socket without repeated chmod.
+
 ---
 
 ## Step 3: Install the Docker **CLI** inside the Jenkins container
