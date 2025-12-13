@@ -2,6 +2,8 @@
 
 ## Video reference for this lecture is the following:
 
+[![Watch the video](https://img.youtube.com/vi/Eql35HIXS4A/maxresdefault.jpg)](https://www.youtube.com/watch?v=Eql35HIXS4A&ab_channel=CloudWithVarJosh)
+
 
 ---
 ## ⭐ Support the Project  
@@ -11,47 +13,53 @@ If this **repository** helps you, give it a ⭐ to show your support and help ot
 
 # **Table of Contents**
 
-* [Introduction](#introduction)  
-* [Why Jenkins Shared Library?](#why-jenkins-shared-library)  
-  * [Challenges With the Traditional Approach](#challenges-with-the-traditional-approach)  
-* [Enter Jenkins Shared Library](#enter-jenkins-shared-library)  
-  * [Why This Is Powerful](#why-this-is-powerful)  
-* [Using a Shared Library in Jenkins](#using-a-shared-library-in-jenkins)  
-* [Shared Library Directory Structure](#shared-library-directory-structure)  
-  * [1. `vars/` (Most Important Directory)](#1-varsmost-important-directory)  
-  * [2. `src/`](#2-src)  
-  * [3. `resources/`](#3-resources)  
-* [Lab: Install Jenkins Controller on EC2](#lab-install-jenkins-controller-on-ec2)  
-  * [Prerequisites](#prerequisites)  
-  * [1 - Create the EC2 instance](#1---create-the-ec2-instance)  
-  * [2 - Connect to the instance and basic setup](#2---connect-to-the-instance-and-basic-setup)  
-  * [3 - Install Java 21 JDK](#3---install-java-21-jdk)  
-  * [4 - Add the Jenkins repository and install Jenkins](#4---add-the-jenkins-repository-and-install-jenkins)  
-  * [5 - Start and enable Jenkins](#5---start-and-enable-jenkins)  
-  * [6 - Access Jenkins UI and initial setup](#6---access-jenkins-ui-and-initial-setup)  
-  * [7 - Run pipeline workloads on the controller lab-mode](#7---run-pipeline-workloads-on-the-controller-lab-mode)  
-  * [8 - Install Docker Engine on the controller](#8---install-docker-engine-on-the-controller-for-lab-demos)  
-  * [9 - Allow Jenkins user to run Docker](#9---allow-jenkins-user-to-run-docker-lab-convenience-only)  
-* [Demo 1: Configure a very simple Shared Library](#demo-1-configure-a-very-simple-shared-library)  
-  * [Step 1: Create Repo and Minimal Layout](#step-1-create-repo--minimal-repo-layout)  
-  * [Step 2: Create Jenkins Shared Library](#step-2-create-jenkins-shared-library)  
-  * [Step 3: Write the Pipeline Script](#step-3-write-the-pipeline-script)  
-  * [Step 4: Run and Verify](#step-4-run--verify-execute-the-job-and-check-logs)  
-* [Demo 2: Private repos plus Jenkins Shared Library](#demo-2-private-repos--jenkins-shared-library)  
-  * [Step 1: Create private repositories](#step-1-create-private-repositories)  
-  * [Step 2: Create a GitHub PAT](#step-2-create-a-github-personal-access-token-pat-and-add-to-jenkins-credentials)  
-  * [Step 3: Prepare local project folders](#step-3-prepare-local-project-folders-and-files)  
-  * [Step 4: Initialize git and push repos](#step-4-initialize-git-and-push-each-repo-app1-app2-shared-library)  
-  * [Step 5: Create Pipeline jobs](#step-5-create-pipeline-jobs-in-jenkins-app1-job--app2-job)  
-  * [Step 6: Verify jobs without shared library](#step-6-verify-jobs-build-without-shared-library-quick-smoke-test)  
-  * [Step 7: Add private shared library](#step-7-add-private-shared-library-to-jenkins-global-pipeline-libraries)  
-  * [Step 8: Move build and deploy logic to library](#step-8-move-build--deploy-logic-to-the-shared-library-what-to-put-in-shared-library-private)  
-  * [Step 9: Update app Jenkinsfiles](#step-9-update-each-app-jenkinsfile-to-use-the-shared-library)  
-  * [Step 10: Run jobs and verify](#step-10-run-the-jobs-and-verify-final)  
-  * [Step 11: Demonstrate the power of the shared library](#step-11-demonstrate-the-power-of-the-shared-library)  
-  * [Why centralising config matters](#why-centralising-config-matters)  
-* [Conclusion](#conclusion)  
-* [References](#references)  
+* [Introduction](#introduction)
+* [Why Jenkins Shared Library?](#why-jenkins-shared-library)
+
+  * [Challenges With the Traditional Approach](#challenges-with-the-traditional-approach)
+* [Enter Jenkins Shared Library](#enter-jenkins-shared-library)
+
+  * [Why This Is Powerful](#why-this-is-powerful)
+* [Using a Shared Library in Jenkins](#using-a-shared-library-in-jenkins)
+* [Shared Library Directory Structure](#shared-library-directory-structure)
+
+  * [1. `vars/` (Most Important Directory)](#1-varsmost-important-directory)
+  * [2. `src/`](#2-src)
+  * [3. `resources/`](#3-resources)
+* [Lab: Install Jenkins Controller on EC2](#lab-install-jenkins-controller-on-ec2)
+
+  * [Prerequisites](#prerequisites)
+  * [1 - Create the EC2 instance](#1---create-the-ec2-instance)
+  * [2 - Connect to the instance and basic setup](#2---connect-to-the-instance-and-basic-setup)
+  * [3 - Install Java 21 JDK](#3---install-java-21-jdk)
+  * [4 - Add the Jenkins repository and install Jenkins](#4---add-the-jenkins-repository-and-install-jenkins)
+  * [5 - Start and enable Jenkins](#5---start-and-enable-jenkins)
+  * [6 - Access Jenkins UI and initial setup](#6---access-jenkins-ui-and-initial-setup)
+  * [7 - Run pipeline workloads on the controller lab-mode](#7---run-pipeline-workloads-on-the-controller-lab-mode)
+  * [8 - Install Docker Engine on the controller](#8---install-docker-engine-on-the-controller-for-lab-demos)
+  * [9 - Allow Jenkins user to run Docker](#9---allow-jenkins-user-to-run-docker-lab-convenience-only)
+* [Demo 1: Configure a very simple Shared Library](#demo-1-configure-a-very-simple-shared-library)
+
+  * [Step 1: Create Repo and Minimal Layout](#step-1-create-repo--minimal-repo-layout)
+  * [Step 2: Create Jenkins Shared Library](#step-2-create-jenkins-shared-library)
+  * [Step 3: Write the Pipeline Script](#step-3-write-the-pipeline-script)
+  * [Step 4: Run and Verify](#step-4-run--verify-execute-the-job-and-check-logs)
+* [Demo 2: Private repos plus Jenkins Shared Library](#demo-2-private-repos--jenkins-shared-library)
+
+  * [Step 1: Create private repositories](#step-1-create-private-repositories)
+  * [Step 2: Create a GitHub PAT](#step-2-create-a-github-personal-access-token-pat-and-add-to-jenkins-credentials)
+  * [Step 3: Prepare local project folders](#step-3-prepare-local-project-folders-and-files)
+  * [Step 4: Initialize git and push repos](#step-4-initialize-git-and-push-each-repo-app1-app2-shared-library)
+  * [Step 5: Create Pipeline jobs](#step-5-create-pipeline-jobs-in-jenkins-app1-job--app2-job)
+  * [Step 6: Verify jobs without shared library](#step-6-verify-jobs-build-without-shared-library-quick-smoke-test)
+  * [Step 7: Add private shared library](#step-7-add-private-shared-library-to-jenkins-global-pipeline-libraries)
+  * [Step 8: Move build and deploy logic to library](#step-8-move-build--deploy-logic-to-the-shared-library-what-to-put-in-shared-library-private)
+  * [Step 9: Update app Jenkinsfiles](#step-9-update-each-app-jenkinsfile-to-use-the-shared-library)
+  * [Step 10: Run jobs and verify](#step-10-run-the-jobs-and-verify-final)
+  * [Step 11: Demonstrate the power of the shared library](#step-11-demonstrate-the-power-of-the-shared-library)
+* [Why centralising config matters](#why-centralising-config-matters)
+* [Conclusion](#conclusion)
+* [References](#references)
 
 ---
 
@@ -67,6 +75,8 @@ This lecture walks you from the **problem landscape**, into **why Shared Librari
 # Why Jenkins Shared Library?
 
 Before we even use the term Shared Library, let’s understand the **problem landscape** that existed *before* this feature came into the picture.
+
+![Alt text](/images/sl1.png)
 
 When you work with multiple projects inside an organisation, you quickly realise that a large portion of your CI CD pipeline is **repetitive**.
 Some examples:
@@ -129,6 +139,8 @@ New developers or DevOps engineers struggle to understand why each project looks
 
 # Enter Jenkins Shared Library
 
+![Alt text](/images/sl2.png)
+
 A Jenkins Shared Library solves all the above challenges by allowing you to **centralise your common pipeline code** in a separate GitHub repository.
 
 Instead of repeating the same logic across 20 Jenkinsfiles, you:
@@ -182,6 +194,8 @@ This keeps the Jenkinsfile short, readable and maintainable.
 
 
 # **Shared Library Directory Structure**
+
+![Alt text](/images/sl3.png)
 
 A Jenkins Shared Library follows a predictable structure in the root of the repository.
 This structure tells Jenkins **where to look** for global steps, helper classes, and supporting files.
@@ -1097,6 +1111,10 @@ In short: **write once, reuse everywhere**, and keep your Jenkins pipelines clea
   [https://docs.docker.com/config/containers/start-containers-automatically/](https://docs.docker.com/config/containers/start-containers-automatically/)
 
 ---
+
+
+
+
 
 
 
