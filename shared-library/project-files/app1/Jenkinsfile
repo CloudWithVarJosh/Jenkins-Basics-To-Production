@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+    environment {
+        REPO = "app1-flask"
+        TAG   = "${BUILD_NUMBER}"
+        PORT = "5000"
+    }
+
+    stages {
+        stage('build') {
+            steps {
+                sh 'docker build -t "$REPO:$TAG" .'
+            }
+        }
+        stage('deploy') {
+            steps {
+                sh 'docker rm -f $REPO || true'
+                sh 'docker run -d --name $REPO -p "$PORT:$PORT" "$REPO:$TAG"'
+            }
+        }
+    }
+}
