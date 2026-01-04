@@ -391,7 +391,7 @@ stage('deploy') {
       cat > deploy-info-$BUILD_NUMBER.txt <<EOF
 build: $BUILD_NUMBER
 image: $IMAGE:$TAG
-commit: ${GIT_COMMIT:0:7}
+commit: ${GIT_COMMIT}
 branch: $GIT_BRANCH
 time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 url: $BUILD_URL
