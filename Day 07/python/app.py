@@ -4,7 +4,7 @@ app = Flask(__name__)
 @app.get("/")
 def hello():
     return jsonify(
-        message="✨ Welcome to Cloud with vinod OH!✨",
+        message="✨ Welcome to Cloud with vinod Devops ✨",
         tip="Built with Flask, shipped by Jenkins, running in Docker from git."
 
     )
