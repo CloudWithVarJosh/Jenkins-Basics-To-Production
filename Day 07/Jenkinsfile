@@ -77,7 +77,7 @@ pipeline {
                 sh '''
                     sleep 2
                     echo "Application deployed successfully."
-                    echo "Open http://localhost:5000"
+                    echo "Open http://192.168.56.114:5000"
                 '''
             }
         }
