@@ -14,8 +14,10 @@ pipeline {
             steps {
                 sh '''
                     docker build \
+                        -f "Day 07/python/Dockerfile" \
                         -t $IMAGE \
-                        -t ${IMAGE_REPOSITORY}:latest .
+                        -t ${IMAGE_REPOSITORY}:latest \
+                        "Day 07/python"
                 '''
             }
         }
