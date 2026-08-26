@@ -1,15 +1,4 @@
-# Day 1: Modern SDLC Explained | Build Automation & Real-World Insights
-
-## Video reference for Day 1 is the following:
-
-[![Watch the video](https://img.youtube.com/vi/imEHsgvJbYo/maxresdefault.jpg)](https://youtu.be/imEHsgvJbYo)
-
-
----
-## ⭐ Support the Project  
-If this **repository** helps you, give it a ⭐ to show your support and help others discover it! 
-
----
+# Modern SDLC Explained | Build Automation & Real-World Insights
 
 ## Table of Contents
 
@@ -36,10 +25,6 @@ If this **repository** helps you, give it a ⭐ to show your support and help ot
 ---
 
 ## Introduction
-
-Welcome to **Day 1 of Jenkins Basics to Production**. Before diving into Jenkins itself, it’s important to understand the **Software Development Life Cycle (SDLC)** and how modern build and automation practices evolved.
-
-In this lecture, we will:
 
 * Explore the phases of the **SDLC**, from requirements to feedback.
 * Contrast **Waterfall vs Agile/DevOps**, and why iterative, automated delivery is now standard.
@@ -450,29 +435,5 @@ If this step is done **manually**, every developer may use different commands, d
 * The same steps run everywhere (dev, staging, prod).
 * Artifacts and dependencies are version-locked.
 * Results are predictable and safe to promote.
-
----
-
-## Conclusion
-
-In this session, we shifted our focus from just *writing code* to what it takes to actually **deliver software reliably in production**.
-
-* We saw how **Waterfall** created late feedback loops, while **Agile + DevOps** enable fast, iterative delivery.
-* We learned that **compiled languages** produce artifacts (e.g., `.jar`, `.exe`, binaries), while **interpreted languages** rely on interpreters/runtimes but still require environment setup.
-* We explored how these differences affect **non-containerized deployments** (direct to VMs/servers) versus **containerized workloads** (Docker images).
-* Finally, we established why **automation is critical** — to ensure builds are consistent, reproducible, and environment-agnostic.
-
-This sets the stage for **Day 2**, where we’ll dive into **Continuous Integration, Testing, Delivery, Deployment, and Monitoring**, and begin to see **how Jenkins brings all of this together**.
-
----
-
-## References
-
-* [Agile Manifesto](https://agilemanifesto.org/) – Foundational principles of Agile.
-* [What is DevOps? – AWS](https://aws.amazon.com/devops/what-is-devops/)
-* [Jenkins Official Documentation](https://www.jenkins.io/doc/)
-* [12-Factor App Methodology](https://12factor.net/) – Best practices for building modern, portable applications.
-* [Martin Fowler on Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html)
-* [Docker Official Docs](https://docs.docker.com/) – For containerized build and runtime practices.
 
 ---
